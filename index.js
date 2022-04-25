@@ -5,7 +5,7 @@ const port = process.env.PORT || 3000;
 const bodyParser = require("body-parser");
 app.use(bodyParser.json());
 
-let database = [];
+let mealDatabase = [];
 let userDatabase = [];
 let id = 0;
 
@@ -16,55 +16,15 @@ app.all("*", (req, res, next) => {
 });
 
 app.get("/", (req, res) => {
-  res.status(200).json({
-    status: 200,
+  res.status(100).json({
+    status: 100,
     result: "Hello World",
   });
 });
 
-app.post("/api/movie", (req, res) => {
-  let movie = req.body;
-  id++;
-  movie = {
-    id,
-    ...movie,
-  };
-  console.log(movie);
-  database.push(movie);
-  res.status(201).json({
-    status: 201,
-    result: database,
-  });
-});
-
-app.get("/api/movie/:movieId", (req, res, next) => {
-  const movieId = req.params.movieId;
-  console.log(`Movie met ID ${movieId} gezocht`);
-  let movie = database.filter((item) => item.id == movieId);
-  if (movie.length > 0) {
-    console.log(movie);
-    res.status(200).json({
-      status: 200,
-      result: movie,
-    });
-  } else {
-    res.status(404).json({
-      status: 404,
-      result: `Movie with ID ${movieId} not found`,
-    });
-  }
-});
-
-app.get("/api/movie", (req, res, next) => {
-  res.status(200).json({
-    status: 200,
-    result: database,
-  });
-});
-
 app.get("/api/user", (req, res) => {
-  res.status(300).json({
-    status: 300,
+  res.status(202).json({
+    status: 202,
     result: userDatabase,
   });
 });
@@ -78,9 +38,16 @@ app.post("/api/user", (req, res) => {
   id++;
   console.log(user);
   userDatabase.push(user);
-  res.status(301).json({
-    status: 301,
+  res.status(201).json({
+    status: 201,
     result: userDatabase,
+  });
+});
+
+app.get("/api/logedIn/:userId", (req, res) => {
+  res.status(401).json({
+    status: 401,
+    result: `This function has not been realised at this point`
   });
 });
 
@@ -90,13 +57,13 @@ app.get("/api/user/:userId", (req, res) => {
   let user = userDatabase.filter((item) => item.id == userId);
   if(user.length > 0){
     console.log(user);
-    res.status(300).json({
-      status : 300,
+    res.status(204).json({
+      status : 204,
       result: user,
     });
   } else {
-    res.status(404).json({
-      status: 404,
+    res.status(401).json({
+      status: 401,
       result: `User with Id ${userId} is not found`
     });
   }
@@ -118,13 +85,13 @@ app.put("/api/user/:userId", (req, res) => {
     } 
     userDatabase[elementIndex] = newUser;
 
-    res.status(302).json({
-      status: 302,
+    res.status(205).json({
+      status: 205,
       result: userDatabase,
     });
   } else {
-    res.status(404).json({
-      status: 404,
+    res.status(401).json({
+      status: 401,
       result: `User with Id ${userId} is not found`
     });
   }
@@ -139,21 +106,21 @@ app.delete("/api/user/:userId", (req, res) => {
 
     const index = userDatabase.indexOf(user);
     userDatabase.splice(index, 1);
-    res.status(303).json({
-      status: 303,
+    res.status(206).json({
+      status: 206,
       result: userDatabase,
     });
   } else {
-    res.status(404).json({
-      status: 404,
+    res.status(401).json({
+      status: 401,
       result: `User with Id ${userId} is not found`
     });
   }
 });
 
 app.all("*", (req, res) => {
-  res.status(404).json({
-    status: 404,
+  res.status(401).json({
+    status: 401,
     result: "End-point not found",
   });
 });
