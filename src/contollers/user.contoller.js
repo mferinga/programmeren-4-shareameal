@@ -13,12 +13,12 @@ let controller = {
             assert(typeof age === 'number', 'Age must be a number');
             assert(typeof password === 'string', 'Password must be a string');
             next()
-        } catch(error){
-            console.log(error)
-            res.status(400).json({
-                status: 400,
-                result: error.toString(),
-            })
+        } catch(err){
+            const error = {
+                status : 400,
+                result : err.message,
+            }
+            next(error);
         }
     },
     addUser:(req, res)=>{
@@ -41,7 +41,7 @@ let controller = {
             result: userDatabase,
         });
     },
-    getUserById:(req, res) =>{
+    getUserById:(req, res, next) =>{
         const userId = req.params.userId;
         console.log(`User met ID ${userId} gezocht`);
         let user = userDatabase.filter((item) => item.id == userId);
@@ -52,10 +52,11 @@ let controller = {
                 result: user,
             });
         } else {
-            res.status(401).json({
-            status: 401,
-            result: `User with Id ${userId} is not found`
-            });
+            const error={
+                status: 401,
+                result: `User with Id ${userId} is not found`
+            }
+            next(error);
         }
     },
     updateUserById:(req, res) =>{
