@@ -1,51 +1,18 @@
 const express = require("express");
 const app = express();
 const router = express.Router();
+const userController = require('../contollers/user.contoller')
 
 let userDatabase = [];
 let id = 0;
 
-app.get("/api/user", (req, res) => {
-    res.status(202).json({
-        status: 202,
-        result: userDatabase,
-    });
-});
+router.get("/api/user", userController.getAllUsers)
 
-app.post("/api/user", (req, res) => {
-    let user = req.body;
-    user = {
-        id,
-        ...user,
-    };
-    id++;
-    console.log(user);
-    userDatabase.push(user);
-    res.status(201).json({
-        status: 201,
-        result: userDatabase,
-    });
-});
+router.post("/api/user", userController.addUser);
 
-app.get("/api/user/:userId", (req, res) => {
-    const userId = req.params.userId;
-    console.log(`User met ID ${userId} gezocht`);
-    let user = userDatabase.filter((item) => item.id == userId);
-    if(user.length > 0){
-        console.log(user);
-        res.status(204).json({
-            status : 204,
-            result: user,
-        });
-    } else {
-        res.status(401).json({
-        status: 401,
-        result: `User with Id ${userId} is not found`
-        });
-    }
-});
+router.get("/api/user/:userId", userController.getUserById)
 
-    app.put("/api/user/:userId", (req, res) => {
+app.put("/api/user/:userId", (req, res) => {
     const userId = req.params.userId;
 
     console.log(`User met ID ${userId} gezocht`);
