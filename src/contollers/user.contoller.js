@@ -117,51 +117,50 @@ let controller = {
 
     },
     updateUserById:(req, res) =>{
-        const userId = req.params.userId;
-
-        console.log(`User met ID ${userId} gezocht`);
-        let oldUser = userDatabase.filter((item) => item.id == userId);
-        if(oldUser.length > 0){
-            console.log(oldUser);
-            elementIndex = userDatabase.findIndex((obj => obj.id == userId));
-            
+        dbconnection.getConnection(function(err, connection) {
+            if(err) throw err;
             let user = req.body;
-            newUser = {
-                id,
-            ...user,
-            } 
-            userDatabase[elementIndex] = newUser;
+            const userId = req.params.userId;
 
-            res.status(205).json({
-            status: 205,
-            result: userDatabase,
-            });
-        } else {
-            res.status(401).json({
-                status: 401,
-                result: `User with Id ${userId} is not found`
-            });
-        }
+            let userFirstName = user.firstname;
+            let userLastName = user.lastname;
+            let userPhoneNumber = user.phonenumber;
+
+            connection.query(
+                `UPDATE user SET firstName = '${userFirstName}', lastName = '${userLastName}', isActive = '${user.isActive}', emailAdress = '${user.emailAdress}', password = '${user.password}', phoneNumber = '${userPhoneNumber}', street = '${user.street}', city = '${user.city}' WHERE id = ${userId}`,
+                function (error, result, fields){
+                    connection.release();
+                    if(result.length == 0){
+                        res.status(404).json({
+                            status : 404,
+                            result : `User with Id ${userId} is not found`,
+                        })
+                    } else {
+                        res.status(205).json({
+                            status : 205,
+                            result : user,
+                        })
+                    }
+                }
+            )
+        })
     },
     deleteUserById:(req, res) =>{
-        const userId = req.params.userId;
-        console.log(`User met ID ${userId} gezocht`);
-        let user = userDatabase.filter((item) => item.id == userId);
-        if(user.length > 0){
-            console.log(userDatabase[userId]);
 
-            const index = userDatabase.indexOf(user);
-            userDatabase.splice(index, 1);
-            res.status(206).json({
-                status: 206,
-                result: userDatabase,
-            });
-        } else {
-            res.status(401).json({
-                status: 401,
-                result: `User with Id ${userId} is not found`
-            });
-        }
+        dbconnection.getConnection(function (err, connection) {
+            if(err) throw err;
+            const userId = req.params.userId;
+            connection.query(
+                `DELETE FROM user WHERE id = ${userId}`,
+                function (error, result, fields){
+                    connection.release();
+                    res.status(206).json({
+                        status : 206,
+                        result : `user with id ${userId} has been deleted`
+                    })
+                }
+            )
+        })
     }
 }
 
