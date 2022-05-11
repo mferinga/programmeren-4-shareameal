@@ -8,34 +8,61 @@ let controller = {
     validateUser:(req, res, next)=>{
         console.log("i am in the validation")
         let user = req.body;
-        let{name, email, age, password } = user
+        let{firstname, lastname, isActive, emailAdress, password, phonenumber, street, city } = user
         try{
-            assert(typeof name === 'string', 'Name must be a string');
-            assert(typeof email === 'string', 'Email must be a string');
-            assert(typeof age === 'number', 'Age must be a number');
+            assert(typeof firstname === 'string', 'Firstname must be a string');
+            assert(typeof lastname === 'string', 'Lastname must be a string');
+            assert(typeof isActive === 'number', 'isActive must be a string');
+            assert(typeof emailAdress === 'string', 'Email must be a string');
             assert(typeof password === 'string', 'Password must be a string');
+            assert(typeof phonenumber === 'string', 'phonenumber must be a string');
+            assert(typeof street === 'string', 'street must be a string');
+            assert(typeof city === 'string', 'city must be a string');
             next()
         } catch(err){
             const error = {
                 status : 400,
                 result : err.message,
             }
+            console.log(err.message);
             next(error);
         }
     },
     addUser:(req, res)=>{
-        let user = req.body;
-        user = {
-            id,
-            ...user,
-        };
-        id++;
-        console.log(user);
-        userDatabase.push(user);
-        res.status(201).json({
-            status: 201,
-            result: userDatabase,
-        });
+        dbconnection.getConnection(function(err, connection) {
+            if(err) throw err; //there is no connection with the database!
+
+            console.log("I am in the post")
+            let user = req.body;
+
+            let userFirstName = user.firstname;
+            let userLastName = user.lastname;
+            let userisActive = user.isActive;
+            let userEmailAdress = user.emailAdress;
+            let userPassword = user.password;
+            let userPhoneNumber = user.phonenumber;
+            let userStreet = user.street;
+            let userCity = user.city;
+
+            console.log("De gegevens van de user: " + userFirstName + ", " + userLastName + ", " + userisActive + ", " + userEmailAdress + ", " + userPassword + ", " + userPhoneNumber + ", " + userStreet + ", " + userCity);
+
+            connection.query(
+                    `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ('${userFirstName}', '${userLastName}', '${userisActive}', '${userEmailAdress}', '${userPassword}', '${userPhoneNumber}', '${userStreet}', '${userCity}');`,
+                    function (error, results, fields) {
+                    // When done with the connection, release it.
+                    connection.release();
+                    
+                    // Handle error after the release.
+                    if (error) throw error;
+                    
+                    // Don't use the connection here, it has been returned to the pool.
+                    console.log('results =' + results.length);
+                    res.status(201).json({
+                            status : 201,
+                            results : user
+                    })
+                })
+        })
     },
 
     getAllUsers:(req, res)=>{
@@ -58,30 +85,36 @@ let controller = {
                     status : 200,
                     results : results
                 })
-        
-                // pool.end((err) => {
-                //     console.log('pool was closed.');
-                // })
             });
         });
     },
     getUserById:(req, res, next) =>{
-        const userId = req.params.userId;
-        console.log(`User met ID ${userId} gezocht`);
-        let user = userDatabase.filter((item) => item.id == userId);
-        if(user.length > 0){
-            console.log(user);
-            res.status(204).json({
-                status : 204,
-                result: user,
-            });
-        } else {
-            const error={
-                status: 401,
-                result: `User with Id ${userId} is not found`
-            }
-            next(error);
-        }
+        dbconnection.getConnection(function(err, connection) {
+            if(err) throw err;
+            const userId = req.params.userId;
+
+            connection.query(
+                `SELECT * FROM user WHERE id = ${userId};`,
+                function (error, result, fields) {
+                    let user = result;
+                    console.log(user);
+                    connection.release();
+
+                    if (user.length == 0) {
+                        res.status(404).json({
+                            status : 404,
+                            result : `User with Id ${userId} is not found`,
+                        })
+                    } else {
+                        res.status(202).json({
+                            status : 202,
+                            restult : user,
+                        });
+                    }
+                } 
+            )
+        })
+
     },
     updateUserById:(req, res) =>{
         const userId = req.params.userId;
