@@ -47,12 +47,18 @@ module.exports = {
                                     })
                                 };
                             })
+                        } else {
+                            console.log("password is incorrect");
+                            res.status(401).json({
+                                status : 401,
+                                results : 'username or password is incorrect'
+                            })
                         }
                     } else {
-                        console.log('user is not found')
+                        console.log('email is not found')
                         res.status(404).json({
                             status : 404,
-                            results : 'email is not found'
+                            results : 'username or password is incorrect'
                         })
                     }
                 }

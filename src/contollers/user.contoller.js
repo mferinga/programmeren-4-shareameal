@@ -1,4 +1,6 @@
 const assert = require('assert');
+const { process_params } = require('express/lib/router');
+const { exit } = require('process');
 const dbconnection = require('../../database/dbconnection')
 
 let controller = {
@@ -8,13 +10,30 @@ let controller = {
         let{firstname, lastname, isActive, emailAdress, password, phonenumber, street, city } = user
         try{
             assert(typeof firstname === 'string', 'Firstname must be a string');
+            assert(firstname.length != 0, 'Firstname must be filled in');
+
             assert(typeof lastname === 'string', 'Lastname must be a string');
-            assert(typeof isActive === 'number', 'isActive must be a string');
+            assert(lastname.length != 0, 'Lastname must be filled in');
+
+            assert(typeof isActive === 'number', 'isActive must be a number');
+            assert(isActive == 0 || isActive == 1, 'isActive must be 0 or 1');
+
             assert(typeof emailAdress === 'string', 'Email must be a string');
+            const valEmail =/^(([^<>()[\]\.,;:\s@\"]+(\.[^<>()[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+            assert.match(emailAdress, valEmail, 'invalid emailaddress');
+
+            const valPasswd = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,16}$/;
             assert(typeof password === 'string', 'Password must be a string');
+            assert.match(password, valPasswd, 'Password is not strong enough');
+
             assert(typeof phonenumber === 'string', 'phonenumber must be a string');
+            assert(phonenumber.length == 10, 'phonenumber is incorrect')
+
             assert(typeof street === 'string', 'street must be a string');
+            assert(street.length != 0, 'street must be filled in');
+
             assert(typeof city === 'string', 'city must be a string');
+            assert(city.length != 0, 'city must be filled in');
             next()
         } catch(err){
             const error = {
@@ -44,13 +63,21 @@ let controller = {
             console.log("De gegevens van de user: " + userFirstName + ", " + userLastName + ", " + userisActive + ", " + userEmailAdress + ", " + userPassword + ", " + userPhoneNumber + ", " + userStreet + ", " + userCity);
 
             connection.query(
-                    `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ('${userFirstName}', '${userLastName}', '${userisActive}', '${userEmailAdress}', '${userPassword}', '${userPhoneNumber}', '${userStreet}', '${userCity}');`,
-                    function (error, results, fields) {
+                `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ('${userFirstName}', '${userLastName}', '${userisActive}', '${userEmailAdress}', '${userPassword}', '${userPhoneNumber}', '${userStreet}', '${userCity}');`,
+                function (error, results, fields) {
                     // When done with the connection, release it.
                     connection.release();
                     
                     // Handle error after the release.
-                    if (error) throw error;
+                    if (error) {
+                        console.log("SQK ERRIR:");
+                        res.status(401).json({
+                            status: 401,
+                            result: "this emailadress is already in use"
+                        })
+                        process.exit(1);
+                        
+                    }
                     
                     // Don't use the connection here, it has been returned to the pool.
                     console.log('results =' + results.length);
@@ -58,7 +85,8 @@ let controller = {
                             status : 201,
                             results : user
                     })
-                })
+                }
+            )
         })
     },
     getAllUsers:(req, res, next)=>{
