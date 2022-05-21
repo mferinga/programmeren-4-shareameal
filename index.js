@@ -6,6 +6,7 @@ const port = process.env.PORT;
 
 const bodyParser = require("body-parser");
 const userRouter = require("./src/routes/user.routes");
+const authRoutes = require("./src/routes/auth.routes");
 
 app.use(bodyParser.json());
 
@@ -15,7 +16,8 @@ app.all("*", (req, res, next) => {
   next();
 });
 
-app.use(userRouter);
+app.use('/api', userRouter);
+app.use('/api', authRoutes);
 
 app.all("*", (req, res) => {
   res.status(401).json({
@@ -26,7 +28,11 @@ app.all("*", (req, res) => {
 
 //error handler
 app.use((err, req, res, next) =>{
-  res.status(err.status).json(err);
+  console.log('Error: ' + err.toString())
+  res.status(500).json({
+    statusCode : 500,
+    message : err.toString(),
+  });
 });
 
 app.listen(port, () => {

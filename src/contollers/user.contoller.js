@@ -1,8 +1,5 @@
 const assert = require('assert');
-const pool = require('../../database/dbconnection');
 const dbconnection = require('../../database/dbconnection')
-let userDatabase = [];
-let id = 0;
 
 let controller = {
     validateUser:(req, res, next)=>{
@@ -64,15 +61,38 @@ let controller = {
                 })
         })
     },
+    getAllUsers:(req, res, next)=>{
+        console.log("inside the get all users")
 
-    getAllUsers:(req, res)=>{
+        const queryParams = req.query;
+        console.log(queryParams);
+
+        let {firstName, isActive} = req.query;
+        console.log(`name = ${firstName} isActive = ${isActive}`);
+
+        let queryString = 'SELECT * FROM user'
+        if(firstName || isActive){
+            queryString += ' WHERE ';
+            if(firstName){
+                queryString += `firstName LIKE ?`;
+            }
+            if(firstName && isActive) {
+                queryString += ' AND '
+            }
+            if(isActive){
+                queryString += `isActive = ?`;
+            }
+        }
+        queryString += ';'
+        console.log(queryString);
+
+        firstName = '%' + firstName + '%'
+
         dbconnection.getConnection(function(err, connection) {
-            if (err) throw err; // not connected!
+            if (err) next(err); // not connected!
            
             // Use the connection
-            connection.query(
-              'SELECT * FROM user;', 
-              function (error, results, fields) {
+            connection.query(queryString,[firstName, isActive], function (error, results, fields) {
                 // When done with the connection, release it.
                 connection.release();
             
