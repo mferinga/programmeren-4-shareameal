@@ -36,9 +36,13 @@ let controller = {
             assert(city.length != 0, 'city must be filled in');
             next()
         } catch(err){
+            res.status(400).json({
+                status : 400,
+                result : "Not all the data is filled in or your emailadress is incorrect",
+            })
             const error = {
                 status : 400,
-                result : err.message,
+                result : "You must fill in all the data",
             }
             console.log(err.message);
             next(error);
@@ -135,6 +139,35 @@ let controller = {
                 })
             });
         });
+    },
+    getUserProfile:(req, res, next)=>{
+        console.log(`getAll aangeroepen. req.userId = ${req.userId}`)
+        let userId = req.userId;
+
+        dbconnection.getConnection(function(err, connection) {
+            if(err) throw err;
+
+            connection.query(
+                `SELECT * FROM user WHERE id = ${userId};`,
+                function (error, result, fields) {
+                    let user = result;
+                    console.log(user);
+                    connection.release();
+
+                    if (user.length == 0) {
+                        res.status(404).json({
+                            status : 404,
+                            result : `User with Id ${userId} is not found`,
+                        })
+                    } else {
+                        res.status(202).json({
+                            status : 202,
+                            restult : user,
+                        });
+                    }
+                } 
+            )
+        })
     },
     getUserById:(req, res, next) =>{
         dbconnection.getConnection(function(err, connection) {
