@@ -1,6 +1,7 @@
 const assert = require('assert');
 const dbconnection = require('../../database/dbconnection')
 const jwt = require ('jsonwebtoken')
+const jwtSecretKey = require('../config/config').jwtSecretKey
 
 module.exports = {
     login:(req, res, next)=>{
@@ -43,7 +44,7 @@ module.exports = {
                                     console.log(token)
                                     res.status(200).json({
                                         statusCode: 200,
-                                        resuls: token,
+                                        resuls: {...user, token},
                                     })
                                 };
                             })
@@ -64,83 +65,37 @@ module.exports = {
                 }
             )
         })
-    }
+    },
+    validateToken(req, res, next) {
+        console.log('ValidateToken called')
+        const authHeader = req.headers.authorization;
+        if(!authHeader){
+            console.log('no authorization header!');
+            res.status(401).json({
+                error: 'No authorization header',
+                dateTime: new Data().toISOString(),
+            })
+        } else {
+            const token = authHeader.substring(7, authHeader.length)
+
+            jwt.verify(token, jwtSecretKey, (err, payload) => {
+                if (err) {
+                    console.log('Not authorized')
+                    res.status(401).json({
+                        error: 'Not authorized',
+                        datetime: new Date().toISOString(),
+                    })
+                }
+                if (payload) {
+                    console.log('token is valid', payload)
+                    // User heeft toegang. Voeg UserId uit payload toe aan
+                    // request, voor ieder volgend endpoint.
+                    req.userId = payload.userid
+                    console.log('userId = ' , payload.userid);
+                    next()
+                }
+            })
+
+        }
+    },
 }
-
-
-
-
-
-
-
-
-
-
-// let controller = {
-//     login:(req, res, next)=>{
-//         console.log("inside the login")
-//         //Assert voor validatie
-
-//         dbconnection.getConnection(function(err, connection) {
-//             if(err) {
-//                 logger.error('Error getting connection from dbconnection')
-//                 res.status(500).json({
-//                     error: err.toString(),
-//                     datetime: new Date().toISOString(),
-//                 })
-//             }
-//             if(connection){
-//                 connection.query(
-//                     'SELECT `id`, `firstName`, `lastName`, `emailAdress`, `password` FROM `user` WHERE `emailadress`=?',
-//                     [req.body.emailAdress],
-//                     (error, results, fields) => {
-//                     // When done with the connection, release it.
-//                         connection.release();
-                    
-//                         // Handle error after the release.
-//                         if (error){
-//                             logger.error('Error: ', err.toString())
-//                             res.status(500).json({
-//                                 error: err.toString(),
-//                                 datetime: new Date().toISOString(),
-//                             })
-//                         } 
-//                         if (results){
-//                             if(results && results.length === 1 && results[0].password == req.body.password) {
-//                                 logger.info('password is correct')
-    
-//                                 const {password, ...userinfo} = results[0]
-//                                 const payload = {
-//                                     userId: userinfo.id,
-//                                 }
-//                                 jwt.sign(
-//                                     payload,
-//                                     'process.env.JWT_SECRET',
-//                                 {expiresIn : '7d'},
-//                                 function(err, token) {
-//                                     if(err) console.log(err)
-//                                     if(token) {
-//                                         console.log(token);
-//                                         res.status(200).json({
-//                                             statusCode : 200,
-//                                             results : token,
-//                                         })
-//                                     } 
-//                                 })
-//                             } else {
-//                                 console.log('user is not found')
-//                                 res.status(404).json({
-//                                     status : 404,
-//                                     results : 'email is not found'
-//                                 })
-//                             }
-//                         }
-
-//                     }
-//                 )
-//             }
-//         })
-//     },
-// }
-
-// module.exports = controller;
