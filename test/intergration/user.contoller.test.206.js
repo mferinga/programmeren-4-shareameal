@@ -30,6 +30,10 @@ const INSERT_USER =
   "INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES" +
   '(1, "first", "last", "name@server.nl", "secret", "street", "city");';
 
+const INSERT_SECONDUSER =
+  "INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES" +
+  '(2, "second", "last", "namesecond@server.nl", "secret", "street", "city");';
+
 /**
  * Query om twee meals toe te voegen. Let op de cookId, die moet matchen
  * met een bestaande user in de database.
@@ -39,8 +43,8 @@ const INSERT_MEALS =
   "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
   "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);";
 
-// UC-204 Get a single user by ID
-describe("UC-204", () => {
+//UC-206 = Delete a user
+describe("UC-206-3", () => {
   beforeEach((done) => {
     logger.debug("beforeEach called");
     // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
@@ -49,7 +53,7 @@ describe("UC-204", () => {
 
       // Use the connection
       connection.query(
-        CLEAR_DB + INSERT_USER + INSERT_MEALS,
+        CLEAR_DB + INSERT_USER + INSERT_SECONDUSER,
         function (error, results, fields) {
           // When done with the connection, release it.
           connection.release();
@@ -62,61 +66,22 @@ describe("UC-204", () => {
         }
       );
     });
-    
-    it("UC-205 id isnt here", (done) =>{
-        chai
-            .request(server)
-            .put("/api/user/8")
-            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
-            .send({
-                firstname : "Dirk",
-                lastname : "Jan",
-                isActive : 1,
-                emailAdress : "gerd.jan@gmail.com",
-                password : "hoiwww@1w",
-                phonenumber : "0612345658",
-                street : "test",
-                city : "teststad1"
-            }).end((err, res) => {
-                res.should.be.an("object");
-                let { status, result } = res.body;
-                res.status.should.eql(400);
-                res.body.results.should.be.a("string")
-                .that.equals("User with Id 8 is not found")
-            })
-    })
-    it("UC-205-6 User is successfully changed, return 200 response", (done) => {
-        chai
-          .request(server)
-          .put("/api/user/1")
-          .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
-          .send({
-            firstname : "Dirk",
-            lastname : "Jan",
-            isActive : 1,
-            emailAdress : "gerd.jan@gmail.com",
-            password : "hoiwww@1w",
-            phonenumber : "0612345658",
-            street : "test",
-            city : "teststad1"
-          })
-          .end((err, res) => {
-            let { status, result } = res.body;
-            logger.info(res.body);
-            res.should.have.status(200);
-            res.body.results.should.be.a("object").that.eql({
-              id: 1,
-              firstname : "Dirk",
-              lastname : "Jan",
-              isActive : 1,
-              emailAdress : "gerd.jan@gmail.com",
-              password : "hoiwww@1w",
-              phonenumber : "0612345658",
-              street : "test",
-              city : "teststad1"
-            });
-            done();
-          });
+
+    it("UC-206-4 User deleted, return 200 response", (done) => {
+    chai
+      .request(server)
+      .delete("/api/user/1")
+      .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
+      .end((err, res) => {
+        logger.info("206-4 res.body: ");
+        logger.info(res.body);
+        res.should.be.an("object");
+        let { status, result } = res.body;
+        res.should.have.status(206);
+        res.body.results.should.be.a("string")
+          .that.eql(res.body);
+        done();
       });
-  })
+    });
+  });
 });
