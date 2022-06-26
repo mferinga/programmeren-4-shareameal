@@ -38,12 +38,8 @@ let controller = {
         } catch(err){
             res.status(400).json({
                 status : 400,
-                result : "Not all the data is filled in or your emailadress is incorrect",
+                result : err.message,
             })
-            const error = {
-                status : 400,
-                result : "You must fill in all the data",
-            }
             console.log(err.message);
             next(error);
         }
