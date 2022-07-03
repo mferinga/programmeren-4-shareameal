@@ -39,7 +39,7 @@ const INSERT_MEALS =
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
     
 
-describe('UC201 Create movie', () => {
+describe('UC201 Create user', () => {
     beforeEach((done) => {
         console.log('beforeEach called')
         // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
@@ -62,102 +62,87 @@ describe('UC201 Create movie', () => {
             )
         })
     })
-})
-
-it('TC-201-1 verplicht veld ontbreekt', (done) => {
-    chai
-        .request(server)
-        .post("/api/user")
-        .send({
-            firstName : "Matthijs",
-            lastName : "Feringa",
-            emailAdress : "mt.feringa@student.avans.nl",
-            // password : "SuperSecret001!"
-        })
-        .end((err, res) => {
-            res.should.be.an("object");
-            let {status, result} = res.body;
-            status.should.equals(400);
-            res.body.should.be.a("string").that.equals("Password must be a string");
-            done();
-        })
-})
-
-it('TC-201-2 Niet-valide email adres', (done) => {
-    chai
-        .request(server)
-        .post("/api/user")
-        .send({
-            firstName : "Matthijs",
-            lastName : "Feringa",
-            emailAdress : "matthijs.feringa#gmail.com",
-            password : "SuperSecret001!"
-        })
-        .end((err, res) => {
-            res.should.be.an("object");
-            let {status, result} = res.body;
-            status.should.equals(400);
-            res.body.should.be.a("string").that.equals("invalid emailaddress");
-            done();
-        })
-})
-
-it('TC-201-3 Niet-valide wachtwoord', (done) => {
-    chai
-        .request(server)
-        .post("/api/user")
-        .send({
-            firstName : "Matthijs",
-            lastName : "Feringa",
-            emailAdress : "matthijs.feringa#gmail.com",
-            password : "toweak"
-        })
-        .end((err, res) => {
-            res.should.be.an("object");
-            let {status, result} = res.body;
-            status.should.equals(400);
-            res.body.should.be.a("string").that.equals("Password is not strong enough");
-            done();
-        })
-})
-
-it('TC-201-4 Gebruiker bestaat al', (done) => {
-    chai
-        .request(server)
-        .post("/api/user")
-        .send({
-            firstName : "first",
-            lastName : "last",
-            emailAdress : "name@server.nl",
-            password : "secret"
-        })
-        .end((err, res) => {
-            res.should.be.an("object");
-            let {status, result} = res.body;
-            status.should.equals(409);
-            res.body.should.be.a("string").that.equals("this emailadress is already in use");
-            done();
-        })
-})
-
-it('TC-201-5 Gebruiker succesvik geregistreerd', (done) => {
-    chai
-        .request(server)
-        .post("/api/user")
-        .send({
-            firstName : "Matthijs",
-            lastName : "Feringa",
-            emailAdress : "matthijs.feringa@gmail.com",
-            password : "SuperSecret001!",
-            street : "hoekakker",
-            city : "Breda"
-        })
-        .end((err, res) => {
-            res.should.be.an("object");
-            let {status, result} = res.body;
-            status.should.equals(201);
-            assert.deepEqual(result , {
-                id : 2,
+    it('TC-201-1 verplicht veld ontbreekt', (done) => {
+        chai
+            .request(server)
+            .post("/api/user")
+            .send({
+                firstName : "Matthijs",
+                lastName : "Feringa",
+                emailAdress : "mt.feringa@student.avans.nl",
+                // password : "SuperSecret001!"
+            })
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(400);
+                res.body.should.be.a("string").that.equals("Password must be a string");
+                done();
+            })
+    })
+    
+    it('TC-201-2 Niet-valide email adres', (done) => {
+        chai
+            .request(server)
+            .post("/api/user")
+            .send({
+                firstName : "Matthijs",
+                lastName : "Feringa",
+                emailAdress : "matthijs.feringa#gmail.com",
+                password : "SuperSecret001!"
+            })
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(400);
+                res.body.should.be.a("string").that.equals("invalid emailaddress");
+                done();
+            })
+    })
+    
+    it('TC-201-3 Niet-valide wachtwoord', (done) => {
+        chai
+            .request(server)
+            .post("/api/user")
+            .send({
+                firstName : "Matthijs",
+                lastName : "Feringa",
+                emailAdress : "matthijs.feringa#gmail.com",
+                password : "toweak"
+            })
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(400);
+                res.body.should.be.a("string").that.equals("Password is not strong enough");
+                done();
+            })
+    })
+    
+    it('TC-201-4 Gebruiker bestaat al', (done) => {
+        chai
+            .request(server)
+            .post("/api/user")
+            .send({
+                firstName : "first",
+                lastName : "last",
+                emailAdress : "name@server.nl",
+                password : "secret"
+            })
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(409);
+                res.body.should.be.a("string").that.equals("this emailadress is already in use");
+                done();
+            })
+    })
+    
+    it('TC-201-5 Gebruiker succesvik geregistreerd', (done) => {
+        chai
+            .request(server)
+            .post("/api/user")
+            .send({
                 firstName : "Matthijs",
                 lastName : "Feringa",
                 emailAdress : "matthijs.feringa@gmail.com",
@@ -165,9 +150,25 @@ it('TC-201-5 Gebruiker succesvik geregistreerd', (done) => {
                 street : "hoekakker",
                 city : "Breda"
             })
-            done();
-        })
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(201);
+                assert.deepEqual(result , {
+                    id : 2,
+                    firstName : "Matthijs",
+                    lastName : "Feringa",
+                    emailAdress : "matthijs.feringa@gmail.com",
+                    password : "SuperSecret001!",
+                    street : "hoekakker",
+                    city : "Breda"
+                })
+                done();
+            })
+    })
+    
 })
+
 
 
 
