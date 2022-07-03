@@ -39,27 +39,27 @@ const INSERT_MEALS =
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
     
 
-describe('UC201 Create movie', () => {
-    beforeEach((done) => {
-        console.log('beforeEach called')
-        // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
-        dbconnection.getConnection(function (err, connection) {
-            if (err) throw err // not connected!
+// describe('UC201 Create movie', () => {
+//     beforeEach((done) => {
+//         console.log('beforeEach called')
+//         // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
+//         dbconnection.getConnection(function (err, connection) {
+//             if (err) throw err // not connected!
 
-            // Use the connection
-            connection.query(
-                CLEAR_DB + INSERT_USER,
-                function (error, results, fields) {
-                    // When done with the connection, release it.
-                    connection.release()
-                    
-                    // Handle error after the release.
-                    if (error) throw error
-                    // Let op dat je done() pas aanroept als de query callback eindigt!
-                    console.log('beforeEach done')
-                    done()
-                }
-            )
-        })
-    })
-})
+//             // Use the connection
+//             connection.query(
+//                 CLEAR_DB + INSERT_USER,
+//                 function (error, results, fields) {
+//                     // When done with the connection, release it.
+//                     connection.release()
+
+//                     // Handle error after the release.
+//                     if (error) throw error
+//                     // Let op dat je done() pas aanroept als de query callback eindigt!
+//                     console.log('beforeEach done')
+//                     done()
+//                 }   
+//             )
+//         })
+//     })
+// })
