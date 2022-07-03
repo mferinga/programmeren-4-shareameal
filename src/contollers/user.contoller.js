@@ -71,8 +71,8 @@ let controller = {
                     // Handle error after the release.
                     if (error) {
                         console.log("SQK ERRIR:");
-                        res.status(401).json({
-                            status: 401,
+                        res.status(409).json({
+                            status: 409,
                             result: "this emailadress is already in use"
                         })
                         process.exit(1);

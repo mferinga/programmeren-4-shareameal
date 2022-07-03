@@ -43,11 +43,13 @@ let controller = {
             assert(typeof description === 'string', 'description must be a string');
             assert(description.length != 0, 'description must be filled in');
             next()
+
+            assert(typeof allergenes === 'string', 'allergenes must be a string');
         } catch(err){
-            const error = {
+            res.status(400).json({
                 status : 400,
                 result : err.message,
-            }
+            })
             console.log(err.message);
             next(error);
         }
