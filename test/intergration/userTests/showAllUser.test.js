@@ -42,9 +42,9 @@ const INSERT_MEALS =
     "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
 
-let token;
-
 describe('UC202 show all users', () => {
+    let token;
+
     beforeEach((done) => {
         console.log('beforeEach called')
         // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
@@ -74,11 +74,12 @@ describe('UC202 show all users', () => {
                 password : "secret"
             })
             .end((err, res) => {
-                if(token){
+                if(res.body.results.token){
                     token = res.body.results.token;
                 }
             })
     })
+
     it('TC-202-1 Toon nul gebruikers', () => {
         chai
             .request(server)
