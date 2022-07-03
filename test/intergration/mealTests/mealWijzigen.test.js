@@ -158,5 +158,43 @@ describe('UC302 Maaltijd wijzigen', () => {
                 done();
             })
     })
+    it('TC-302-5 Maaltijd succesvol gewijzigd', (done) => {
+        chai
+            .request(server)
+            .put("/api/meal/6")
+            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
+            .send({
+                isActive : 1,
+                isVega : 0,
+                isVegan : 0,
+                isToTakeHome : 1,
+                dateTime : "2022-05-25 16:30:00",
+                price : 8.50,
+                maxAmountOfParticipants : 4,
+                imageUrl : "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                name : "Kip kerrie",
+                description : "Kip en kerriesaus",
+                allergenes : ""
+            })
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(404);
+                res.body.should.be.a("string").that.equals({
+                    isActive : 1,
+                    isVega : 0,
+                    isVegan : 0,
+                    isToTakeHome : 1,
+                    dateTime : "2022-05-25 16:30:00",
+                    price : 8.50,
+                    maxAmountOfParticipants : 4,
+                    imageUrl : "https://miljuschka.nl/wp-content/uploads/2021/02/Pasta-bolognese-3-2.jpg",
+                    name : "Kip kerrie",
+                    description : "Kip en kerriesaus",
+                    allergenes : ""
+                });
+                done();
+            })
+    })
 
 })
