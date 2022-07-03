@@ -7,6 +7,13 @@ let controller = {
     validateUser:(req, res, next)=>{
         console.log("i am in the validation")
         let user = req.body;
+        let rowNumberUser =  Object.keys(user).length;
+        if(rowNumberUser < 8){
+            res.status(400).json({
+                status : 400,
+                result : 'There isnt enough information to create/update a new user',
+            })
+        }
         let{firstname, lastname, isActive, emailAdress, password, phonenumber, street, city } = user
         try{
             assert(typeof firstname === 'string', 'Firstname must be a string');

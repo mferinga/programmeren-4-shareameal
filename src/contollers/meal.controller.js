@@ -8,6 +8,13 @@ let controller = {
     validateMeal:(req, res, next)=>{
         console.log("i am in the validation")
         let meal = req.body;
+        let rowNumberMeal =  Object.keys(meal).length;
+        if(rowNumberMeal < 10){
+            res.status(400).json({
+                status : 400,
+                result : 'There isnt enough information to create/update a new meal',
+            })
+        }
         let{isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants, price, imageUrl, name, description } = meal
         try{
             assert(typeof isActive === 'number', 'isActive must be a number');
@@ -43,8 +50,6 @@ let controller = {
             assert(typeof description === 'string', 'description must be a string');
             assert(description.length != 0, 'description must be filled in');
             next()
-
-            assert(typeof allergenes === 'string', 'allergenes must be a string');
         } catch(err){
             res.status(400).json({
                 status : 400,

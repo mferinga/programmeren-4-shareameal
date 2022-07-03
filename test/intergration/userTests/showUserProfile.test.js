@@ -13,6 +13,8 @@ const { jwtSecretKey, logger } = require('../../../src/config/config')
 chai.should()
 chai.use(chaiHttp)
 
+let fakeToken = "ditIsEenNepToken12121";
+
 /**
  * Db queries to clear and fill the test database before each test.
  */
@@ -29,6 +31,10 @@ const INSERT_USER =
     'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
     '(1, "first", "last", "name@server.nl", "secret", "street", "city");'
 
+const INSERT_USER2 =
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(2, "second", "latest", "second.latest@server.nl", "supersecret", "streets", "cities");'
+
 /**
  * Query om twee meals toe te voegen. Let op de cookId, die moet matchen
  * met een bestaande user in de database.
@@ -37,9 +43,10 @@ const INSERT_MEALS =
     'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
     "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
-    
 
-describe('UC201 Create movie', () => {
+describe('UC203 get user profile', () => {
+    let token;
+
     beforeEach((done) => {
         console.log('beforeEach called')
         // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
@@ -48,7 +55,7 @@ describe('UC201 Create movie', () => {
 
             // Use the connection
             connection.query(
-                CLEAR_DB + INSERT_USER,
+                CLEAR_DB + INSERT_USER + INSERT_USER2,
                 function (error, results, fields) {
                     // When done with the connection, release it.
                     connection.release()
@@ -58,8 +65,58 @@ describe('UC201 Create movie', () => {
                     // Let op dat je done() pas aanroept als de query callback eindigt!
                     console.log('beforeEach done')
                     done()
-                }   
+                }
             )
         })
+        chai
+            .request(server)
+            .post("/api/auth/login")
+            .send({
+                emailAdress : "name@server.nl",
+                password : "secret"
+            })
+            .end((err, res) => {
+                if(res.body.results.token){
+                    token = res.body.results.token;
+                }
+            })
     })
+    it('TC-203-1 ongeldigtoken', () => {
+        chai
+            .request(server)
+            .get("/api/user/?firstName=qwerty")
+            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, fakeToken))
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(401);
+                res.body.error.should.eql("Not authorized");
+                done();
+            })
+    })
+    it('TC-203-2 Valide token en gebruiker bestaat', () => {
+        chai
+            .request(server)
+            .get("/api/user/profile")
+            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(202);
+                res.body.error.should.eql({
+                   id: 1,
+                   firstName: "first",
+                   lastName: "last",
+                   isActive: 1,
+                   emailAdress: "name@server.nl",
+                   password: "secret",
+                   phoneNumber: "",
+                   roles: "editor, guest",
+                   street : "street",
+                   city : "city",
+                });
+                done();
+            })
+    })
+
 })

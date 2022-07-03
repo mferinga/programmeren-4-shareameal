@@ -13,6 +13,8 @@ const { jwtSecretKey, logger } = require('../../../src/config/config')
 chai.should()
 chai.use(chaiHttp)
 
+let fakeToken = "ditIsEenNepToken12121";
+
 /**
  * Db queries to clear and fill the test database before each test.
  */
@@ -29,6 +31,10 @@ const INSERT_USER =
     'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
     '(1, "first", "last", "name@server.nl", "secret", "street", "city");'
 
+const INSERT_USER2 =
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(2, "second", "latest", "second.latest@server.nl", "supersecret", "streets", "cities");'
+
 /**
  * Query om twee meals toe te voegen. Let op de cookId, die moet matchen
  * met een bestaande user in de database.
@@ -37,9 +43,10 @@ const INSERT_MEALS =
     'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
     "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
-    
 
-describe('UC201 Create user', () => {
+describe('UC204 get specificuser', () => {
+    let token;
+
     beforeEach((done) => {
         console.log('beforeEach called')
         // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
@@ -48,7 +55,7 @@ describe('UC201 Create user', () => {
 
             // Use the connection
             connection.query(
-                CLEAR_DB + INSERT_USER,
+                CLEAR_DB + INSERT_USER + INSERT_USER2,
                 function (error, results, fields) {
                     // When done with the connection, release it.
                     connection.release()
@@ -61,115 +68,68 @@ describe('UC201 Create user', () => {
                 }
             )
         })
-    })
-    it('TC-201-1 verplicht veld ontbreekt', (done) => {
         chai
             .request(server)
-            .post("/api/user")
+            .post("/api/auth/login")
             .send({
-                firstName : "Matthijs",
-                lastName : "Feringa",
-                emailAdress : "mt.feringa@student.avans.nl",
-                // password : "SuperSecret001!"
-            })
-            .end((err, res) => {
-                res.should.be.an("object");
-                let {status, result} = res.body;
-                status.should.equals(400);
-                res.body.should.be.a("string").that.equals("There isnt enough information to create/update a new user");
-                done();
-            })
-    })
-    
-    it('TC-201-2 Niet-valide email adres', (done) => {
-        chai
-            .request(server)
-            .post("/api/user")
-            .send({
-                firstName : "Matthijs",
-                lastName : "Feringa",
-                emailAdress : "matthijs.feringa#gmail.com",
-                password : "SuperSecret001!"
-            })
-            .end((err, res) => {
-                res.should.be.an("object");
-                let {status, result} = res.body;
-                status.should.equals(400);
-                res.body.should.be.a("string").that.equals("invalid emailaddress");
-                done();
-            })
-    })
-    
-    it('TC-201-3 Niet-valide wachtwoord', (done) => {
-        chai
-            .request(server)
-            .post("/api/user")
-            .send({
-                firstName : "Matthijs",
-                lastName : "Feringa",
-                emailAdress : "matthijs.feringa#gmail.com",
-                password : "toweak"
-            })
-            .end((err, res) => {
-                res.should.be.an("object");
-                let {status, result} = res.body;
-                status.should.equals(400);
-                res.body.should.be.a("string").that.equals("Password is not strong enough");
-                done();
-            })
-    })
-    
-    it('TC-201-4 Gebruiker bestaat al', (done) => {
-        chai
-            .request(server)
-            .post("/api/user")
-            .send({
-                firstName : "first",
-                lastName : "last",
                 emailAdress : "name@server.nl",
                 password : "secret"
             })
             .end((err, res) => {
-                res.should.be.an("object");
-                let {status, result} = res.body;
-                status.should.equals(409);
-                res.body.should.be.a("string").that.equals("this emailadress is already in use");
-                done();
+                if(res.body.results.token){
+                    token = res.body.results.token;
+                }
             })
     })
-    
-    it('TC-201-5 Gebruiker succesvik geregistreerd', (done) => {
+    it('TC-204-1 ongeldigtoken', () => {
         chai
             .request(server)
-            .post("/api/user")
-            .send({
-                firstName : "Matthijs",
-                lastName : "Feringa",
-                emailAdress : "matthijs.feringa@gmail.com",
-                password : "SuperSecret001!",
-                street : "hoekakker",
-                city : "Breda"
-            })
+            .get("/api/user/?firstName=qwerty")
+            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, fakeToken))
             .end((err, res) => {
                 res.should.be.an("object");
                 let {status, result} = res.body;
-                status.should.equals(201);
-                assert.deepEqual(result , {
-                    id : 2,
-                    firstName : "Matthijs",
-                    lastName : "Feringa",
-                    emailAdress : "matthijs.feringa@gmail.com",
-                    password : "SuperSecret001!",
-                    street : "hoekakker",
-                    city : "Breda"
-                })
+                status.should.equals(401);
+                res.body.error.should.eql("Not authorized");
                 done();
             })
     })
-    
+    it('TC-204-2 id bestaat niet', () => {
+        chai
+            .request(server)
+            .get("/api/user/10")
+            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(404);
+                res.body.error.should.eql("User with Id 10 is not found");
+                done();
+            })
+    })
+    it('TC-204-3 id bestaat', () => {
+        chai
+            .request(server)
+            .get("/api/user/1")
+            .set("authorization", "Bearer " + jwt.sign({ id: 1 }, jwtSecretKey))
+            .end((err, res) => {
+                res.should.be.an("object");
+                let {status, result} = res.body;
+                status.should.equals(202);
+                res.body.error.should.eql({
+                    id: 1,
+                    firstName: "first",
+                    lastName: "last",
+                    isActive: 1,
+                    emailAdress: "name@server.nl",
+                    password: "secret",
+                    phoneNumber: "",
+                    roles: "editor, guest",
+                    street : "street",
+                    city : "city",
+                });
+                done();
+            })
+    })
+
 })
-
-
-
-
-    
