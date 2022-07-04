@@ -40,10 +40,10 @@ describe('UC-user', () => {
                     connection.query('ALTER TABLE user AUTO_INCEMENT = 1;', (error, result, field) => {
                         connection.query('INSERT INTO `user` (`id`, `firstName`, `lastName`, `isActive`, `emailAdress`, `password`, `phonenumber`, `street`, `city` ) VALUES' +
                         '(1, "Matthijs", "Feringa", 1 "matthijs.fernga@gmail.com", "superSecret1!", "0636025385", "hoekakker", "Breda");',function (error, results, fields){
-                            connection.query('INSERT INTO `meal` (`id`, `isActive`, `isVega` , `isVegan` , `isToTakeHome`, `dateTime`, `maxAmountOfParticipants`,  `price`, `imageUrl`, `name`, `description`, `cookId`) VALUES' +
-                            "(2, 1, 0, 0, 1, '2022-04-07 18:12:00', 5, 4.50, 'test.jpg', 'Sperziebonen', 'Sperziebonen met aardappelen en een gehaktbal', 2);", function(error, results, fields){
-                                    connection.release();
-                                    done();
+                            connection.query( 'INSERT INTO `user` (`id`, `firstName`, `lastName`, `isActive`, `emailAdress`, `password`, `phonenumber`, `street`, `city` ) VALUES' +
+                            '(2, "Kris", "Dekkers", 0, "kris.dekkers@hotmail.com", "NotHackable0!", "0648896235", "Acedemiesingel", "Breda");', function (error, restult, fields){
+                                connection.release();
+                                done();
                             })
                         })
                     })
@@ -73,107 +73,194 @@ describe('UC-user', () => {
                 done();
             })
         })
-    })
-    it('TC-201-2 Niet-valide email adres', (done) => {
-        chai
-            .request(server)
-            .post("/api/user")
-            .send({
-                firstname : "Bad",
-                lastname : "Eend",
-                isActive : 1,
-                emailAdress : "bad.eend#gmail.com",
-                password : "TestPass214@",
-                phonenumber : "0612345678",
-                street : "test",
-                city : "Breda"
-            })
-            .end((err, res) => {
-                res.should.be.an("object");
-                let {status, result} = res.body;
-                status.should.equals(400);
-                result.should.be.a("string").that.equals("invalid emailaddress");
-                done();
-            })
+        it('TC-201-2 Niet-valide email adres', (done) => {
+            chai
+                .request(server)
+                .post("/api/user")
+                .send({
+                    firstname : "Bad",
+                    lastname : "Eend",
+                    isActive : 1,
+                    emailAdress : "bad.eend#gmail.com",
+                    password : "TestPass214@",
+                    phonenumber : "0612345678",
+                    street : "test",
+                    city : "Breda"
+                })
+                .end((err, res) => {
+                    res.should.be.an("object");
+                    let {status, result} = res.body;
+                    status.should.equals(400);
+                    result.should.be.a("string").that.equals("invalid emailaddress");
+                    done();
+                })
+        })
+        it('TC-201-3 Niet-valide wachtwoord', (done) => {
+            chai
+                .request(server)
+                .post("/api/user")
+                .send({
+                    firstname : "Bad",
+                    lastname : "Eend",
+                    isActive : 1,
+                    emailAdress : "bad.eend@gmail.com",
+                    password : "toweak",
+                    phonenumber : "0612345678",
+                    street : "test",
+                    city : "Breda"
+                })
+                .end((err, res) => {
+                    res.should.be.an("object");
+                    let {status, result} = res.body;
+                    status.should.equals(400);
+                    result.should.be.a("string").that.equals("Password is not strong enough");
+                    done();
+                })
+        })
+        
+        // it('TC-201-4 emailadres bestaat al', (done) => {
+        //     chai
+        //         .request(server)
+        //         .post("/api/user")
+        //         .send({
+        //             firstname : "Job",
+        //             lastname : "Feringa",
+        //             isActive : 1,
+        //             emailAdress : "kris.dekkers@hotmail.com",
+        //             password : "superSecret1!",
+        //             phonenumber : "0636025385",
+        //             street : "hoekakker",
+        //             city : "Breda"
+        //         })
+        //         .end((err, res) => {
+        //             res.should.be.an("object");
+        //             let {status, result} = res.body;
+        //             status.should.equals(409);
+        //             result.should.be.a("string").that.equals("this emailadress is already in use");
+        //             done();
+        //         })
+        // })
+        
+        // it('TC-201-5 Gebruiker succesvol geregistreerd', (done) => {
+        //     chai
+        //         .request(server)
+        //         .post("/api/user")
+        //         .send({
+        //             firstname : "Bad",
+        //             lastname : "Eend",
+        //             isActive : 1,
+        //             emailAdress : "bad.eend@gmail.com",
+        //             password : "Password11!",
+        //             phonenumber : "0612345678",
+        //             street : "test",
+        //             city : "Breda"
+        //         })
+        //         .end((err, res) => {
+        //             res.should.be.an("object");
+        //             let {status, result} = res.body;
+        //             status.should.equals(201);
+        //             assert.deepEqual(result , {
+        //                 firstname : "Bad",
+        //                 lastname : "Eend",
+        //                 isActive : 1,
+        //                 emailAdress : "bad.eend@gmail.com",
+        //                 password : "Password11!",
+        //                 phonenumber : "0612345678",
+        //                 street : "test",
+        //                 city : "Breda"
+        //             })
+        //             done();
+        //         })
+        // })
     })
     
-    it('TC-201-3 Niet-valide wachtwoord', (done) => {
-        chai
-            .request(server)
-            .post("/api/user")
-            .send({
-                firstname : "Bad",
-                lastname : "Eend",
-                isActive : 1,
-                emailAdress : "bad.eend@gmail.com",
-                password : "toweak",
-                phonenumber : "0612345678",
-                street : "test",
-                city : "Breda"
-            })
-            .end((err, res) => {
-                res.should.be.an("object");
-                let {status, result} = res.body;
-                status.should.equals(400);
-                result.should.be.a("string").that.equals("Password is not strong enough");
-                done();
-            })
-    })
-    
-    // it('TC-201-4 Gebruiker bestaat al', (done) => {
-    //     chai
-    //         .request(server)
-    //         .post("/api/user")
-    //         .send({
-    //             firstname : "Matthijs",
-    //             lastname : "Feringa",
-    //             isActive : 1,
-    //             emailAdress : "matthijs.fernga@gmail.com",
-    //             password : "superSecret1!",
-    //             phonenumber : "0636025385",
-    //             street : "hoekakker",
-    //             city : "Breda"
-    //         })
-    //         .end((err, res) => {
-    //             res.should.be.an("object");
-    //             let {status, result} = res.body;
-    //             status.should.equals(409);
-    //             result.should.be.a("string").that.equals("this emailadress is already in use");
-    //             done();
-    //         })
-    // })
-    
-    // it('TC-201-5 Gebruiker succesvol geregistreerd', (done) => {
-    //     chai
-    //         .request(server)
-    //         .post("/api/user")
-    //         .send({
-    //             firstname : "Bad",
-    //             lastname : "Eend",
-    //             isActive : 1,
-    //             emailAdress : "bad.eend@gmail.com",
-    //             password : "Password11!",
-    //             phonenumber : "0612345678",
-    //             street : "test",
-    //             city : "Breda"
-    //         })
-    //         .end((err, res) => {
-    //             res.should.be.an("object");
-    //             let {status, result} = res.body;
-    //             status.should.equals(201);
-    //             assert.deepEqual(result , {
-    //                 firstname : "Bad",
-    //                 lastname : "Eend",
-    //                 isActive : 1,
-    //                 emailAdress : "bad.eend@gmail.com",
-    //                 password : "Password11!",
-    //                 phonenumber : "0612345678",
-    //                 street : "test",
-    //                 city : "Breda"
-    //             })
-    //             done();
-    //         })
-    // })
+
+    describe("UC-202 Overview of all users /api/user", ()=> {
+
+        it("TC-202-1 legen lijst van user terug geven ", (done) => {
+            chai
+                .request(server)
+                .get("/api/user/?firstName=vuelta")
+                .auth(validToken, { type: 'bearer' })
+                .end((err,res) => {
+                    res.should.be.an("object")
+                    let {status, results} = res.body;
+                    status.should.equals(200)
+                    results.should.be.an('array').that.lengthOf(0);
+                    done();
+                });
+        });
+
+        // it("TC-202-2 beide users weergeven", (done) => {
+        //     chai
+        //         .request(server)
+        //         .get("/api/user/?firstname=Matthijs")
+        //         .auth(validToken, { type: 'bearer' })
+        //         .end((err,res) => {
+        //             res.should.be.an("object")
+        //             let {status, results} = res.body;
+        //             status.should.equals(200)
+        //             results.should.be.an('array').that.lengthOf(2);
+        //             done();
+        //         });
+        // });
+
+        it("TC-202-3 Search for non-existing name while getting all users", (done) => {
+            chai
+                .request(server)
+                .get("/api/user?firstName=TourDeFrance")
+                .auth(validToken, { type: 'bearer' })
+                .end((err,res) => {
+                    res.should.be.an("object")
+                    let {status, results} = res.body;
+                    status.should.equals(200)
+                    results.should.be.an('array').that.lengthOf(0);
+                    done();
+                });
+        });
+
+        it("TC-202-4 zoeken doormiddel van isActive op false te zetten", (done) => {
+            chai
+                .request(server)
+                .get("/api/user?isActive=0")
+                .auth(validToken, { type: 'bearer' })
+                .end((err,res) => {
+                    res.should.be.an("object")
+                    let {status, results} = res.body;
+                    status.should.equals(200)
+                    results.should.be.an('array').that.lengthOf(1);
+                    done();
+                });
+        });
+
+        it("TC-202-5 zoeken doormiddel van isActive op true te zetten", (done) => {
+            chai
+                .request(server)
+                .get("/api/user?isActive=1")
+                .auth(validToken, { type: 'bearer' })
+                .end((err,res) => {
+                    res.should.be.an("object")
+                    let {status, results} = res.body;
+                    status.should.equals(200)
+                    results.should.be.an('array').that.lengthOf(1);
+                    done();
+                });
+        });
+
+        it("TC-202-6 Zoeken op een bestaande naam in de lijst", (done) => {
+            chai
+                .request(server)
+                .get("/api/user?firstName=kris")
+                .auth(validToken, { type: 'bearer' })
+                .end((err,res) => {
+                    res.should.be.an("object")
+                    let {status, results} = res.body;
+                    status.should.equals(200)
+                    results.should.be.an('array').that.lengthOf(1);
+                    done();
+                });
+        });
+    });
 
     describe("UC-203 get users profile /api/user/profile", () => {
         it("TC-203-1 Token is niet geldig", (done) => {
@@ -267,4 +354,56 @@ describe('UC-user', () => {
         //         })
         // })
     }) 
+
+    describe("UC-205 Updating a user /api/user", ()=> {
+
+        it("TC-205-1 user updaten zonder alle gegevens", (done) => {
+            chai
+                .request(server)
+                .put("/api/user/2")
+                .auth(validToken, { type: 'bearer' })
+                .send({
+                    // firstName : "Bad",
+                    lastName : "Eend",
+                    isActive : 1,
+                    emailAdress : "badeendje@gmail.com",
+                    password : "Badeendje3!",
+                    phoneNumber : "0698765432",
+                    street : "badderstraat",
+                    city : "dobberen"
+            })
+            .end((err,res) => {
+                res.should.be.an("object")
+                let {status, result} = res.body;
+                status.should.equals(400)
+                result.should.be.a("string").that.equals("There isnt enough information to create/update a new user");
+                done();
+            });
+        });
+
+        it("TC-205-3 Telefoonnummer is niet geldig", (done) => {
+            chai
+                .request(server)
+                .put("/api/user/2")
+                .auth(validToken, { type: 'bearer' })
+                .send({
+                    firstName : "Bad",
+                    lastName : "Eend",
+                    isActive : 1,
+                    emailAdress : "badeendje@gmail.com",
+                    password : "Badeendje3!",
+                    phoneNumber : "112",
+                    street : "badderstraat",
+                    city : "dobberen"
+            })
+            .end((err,res) => {
+                res.should.be.an("object")
+                let {status, result} = res.body;
+                status.should.equals(400)
+                result.should.be.a("string").that.equals("Firstname must be a string");
+                done();
+            });
+        });
+
+    });
 })

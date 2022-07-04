@@ -13,7 +13,7 @@ router.get("/user/profile",authController.validateToken, userController.getUserP
 
 router.get("/user/:userId",authController.validateToken, userController.getUserById);
 
-router.put("/user/:userId",authController.validateToken, userController.updateUserById);
+router.put("/user/:userId",authController.validateToken, userController.validateUser, userController.updateUserById);
 
 router.delete("/user/:userId",authController.validateToken, userController.deleteUserById)
 
