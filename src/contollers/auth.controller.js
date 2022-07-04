@@ -82,8 +82,9 @@ module.exports = {
                 if (err) {
                     console.log('Not authorized')
                     res.status(401).json({
+                        status : 401,
                         error: 'Not authorized',
-                        datetime: new Date().toISOString(),
+                        // datetime: new Date().toISOString(),
                     })
                 }
                 if (payload) {
